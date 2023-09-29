@@ -1,0 +1,22 @@
+Package: riskassess
+Type: Package
+Title: Shiny App for Risk Assessment
+Version: 0.0.0.9000
+Authors@R: c(FC = person("Finlay", "Campbell",
+                  email = "campellf@who.int",
+                  role = c("aut", "cre"))
+            )
+Maintainer: Finlay Campbell <campellf@who.int>	    
+Description: This package runs a Shiny app for calibrating risk assessments.
+License: GPL-3 
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    dplyr,
+    ggplot2,
+    purrr,
+    shiny
+Depends: 
+    R (>= 2.10)
+LazyData: true
