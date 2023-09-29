@@ -1,6 +1,6 @@
 Package: riskassess
 Type: Package
-Title: Shiny App for Risk Assessment
+Title: Shiny App for WHO Risk Assessment
 Version: 0.0.0.9000
 Authors@R: c(FC = person("Finlay", "Campbell",
                   email = "campellf@who.int",
