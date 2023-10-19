@@ -10,6 +10,17 @@ get_risks(
   weightings = rep(1/length(groupings), length(groupings))
 )
 }
+\arguments{
+\item{groupings}{Named list of named numeric vectors grouping the different
+scores into pillars and indicating their relative weighting within-pillar,
+as returned by \code{read_data}.}
+
+\item{scores}{data.frame of risk scores for each geographic region, as
+returned by \code{read_data}.}
+
+\item{weightings}{Numeric vector of the same length as \code{groupings}
+indicating the relative weightings of the different pillars.}
+}
 \description{
 Calculate risks from groupings, scores and overall weightings
 }

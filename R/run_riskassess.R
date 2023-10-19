@@ -28,7 +28,7 @@ run_riskassess <- function() {
           ),
           tabPanel(
             title = "Select Overall Weightings",
-            uiOutput("weightings")
+            uiOutput("weighting_sliders")
           ),
           tabPanel(
             title = "Select Pillar Weightings",
@@ -36,7 +36,18 @@ run_riskassess <- function() {
           )
         )
       ),
-      uiOutput("plots")
+      mainPanel(
+        tabsetPanel(
+          tabPanel(
+            title = "Scores",
+            dataTableOutput("tables")
+          ),
+          tabPanel(
+            title = "Plots",
+            uiOutput("plots")
+          )
+        )
+      )
     )
   )
 
@@ -62,25 +73,27 @@ run_riskassess <- function() {
     })
 
     ## define risk as a reactive value depending on sliders
-    ## values <- reactiveValues(risks = get_risks(data()$groupings, data()$scores))
     values <- reactiveValues(risks = NULL)
 
     ## re-calculate risk when needed
     observe({
 
       ## read groupings from sliders
-      groupings <- map(
+      values$groupings <- map(
         data()$groupings,
         ~ imap_dbl(.x, function(x, y) if(!is.null(input[[y]])) input[[y]] else(x))
       ) %>%
         map(~.x/sum(.x))
+      groupings <- values$groupings
 
       ## read pillar weightings from sliders
-      weightings <- map_dbl(
+      values$weightings <- map_dbl(
         names(data()$groupings),
         ~ if(!is.null(input[[.x]])) input[[.x]] else 1/length(data()$groupings)
       ) %>%
-        (\(x) x/sum(x))
+        (\(x) x/sum(x)) %>%
+        setNames(names(data()$groupings))
+      weightings <- values$weightings
 
       ## calculate risk scores from weightings and metrics
       values$risks <- get_risks(
@@ -101,16 +114,28 @@ run_riskassess <- function() {
              )
       )
 
+      output$tables <- renderDataTable(
+        vis_risk_table(values$risks, values$weightings),
+        options = list(
+          order = if(!is.null(values$risks))
+                    list(match("Total", names(values$risks))-1, "desc")
+                  else list(0, "desc"),
+          pageLength = 15,
+          searching = FALSE
+        )
+      )
+
     })
 
-    ## define slider for overall weightings
-    output$weightings <- renderUI({
-      map(names(data()$groupings), function(i) {
-        sliderInput(inputId = i, label = i, min = 0, max = 10, value = 5)
-      })
-    })
 
     observe({
+
+      ## define slider for overall weightings
+      output$weighting_sliders <- renderUI({
+        map(names(data()$groupings), function(i) {
+          sliderInput(inputId = i, label = i, min = 0, max = 10, value = 5)
+        })
+      })
 
       output$pillars <- renderUI(
         do.call(
@@ -130,28 +155,25 @@ run_riskassess <- function() {
 
       ## manual hack for generating two columns of plots
       output$plots <- renderUI(
-        do.call(
-          mainPanel,
-          map(
-            seq_len(ceiling((length(data()$groupings) + 1)/2)),
-            function(rownumber) {
-              n <- length(data()$groupings) + 1
-              nms <- c(names(data()$groupings), "Total")
-              index <- seq(1, n, by = 2)[rownumber]
-              fluidRow(
-                column(
-                  6, renderPlot(vis_scores(
-                       values$risks, shape(), nms[index], title = nms[index]
-                     ))
-                ),
-                column(
-                  6, renderPlot(vis_scores(
-                       values$risks, shape(), nms[index+1], title = nms[index+1]
-                     ))
-                )
+        map(
+          seq_len(ceiling((length(data()$groupings) + 1)/2)),
+          function(rownumber) {
+            n <- length(data()$groupings) + 1
+            nms <- c(names(data()$groupings), "Total")
+            index <- seq(1, n, by = 2)[rownumber]
+            fluidRow(
+              column(
+                6, renderPlot(vis_scores(
+                     values$risks, shape(), nms[index], title = nms[index]
+                   ))
+              ),
+              column(
+                6, renderPlot(vis_scores(
+                     values$risks, shape(), nms[index+1], title = nms[index+1]
+                   ))
               )
-            }
-          )
+            )
+          }
         )
       )
 
@@ -171,6 +193,6 @@ run_riskassess <- function() {
   }
 
   ## Run the Shiny app
-  shinyApp(ui = ui, server = server, options = list(quiet = TRUE))
+  shinyApp(ui = ui, server = server)
 
 }

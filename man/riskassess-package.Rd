@@ -4,7 +4,7 @@
 \name{riskassess-package}
 \alias{riskassess}
 \alias{riskassess-package}
-\title{riskassess: Shiny App for Risk Assessment}
+\title{riskassess: Shiny App for WHO Risk Assessment}
 \description{
 This package runs a Shiny app for calibrating risk assessments.
 }
